@@ -38,7 +38,7 @@ func run() {
 	cfg := pixelgl.WindowConfig{
 		Title:  "Pixel animation",
 		Bounds: pixel.R(0, 0, screenWidth, screenHeight),
-		VSync:  true,
+		VSync:  false,
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	handleError(err)
@@ -59,9 +59,10 @@ func run() {
 			120 * time.Millisecond,
 			120 * time.Millisecond,
 		},
-		currentFrame: 0,
-		active:       false,
-		loop:         true,
+		currentFrame:  0,
+		currentSprite: pixel.NewSprite(nil, pixel.Rect{}),
+		active:        false,
+		loop:          true,
 	}
 
 	fps := 0
@@ -80,8 +81,6 @@ func run() {
 		transform := pixel.IM.Moved(pos).Scaled(pos, 2)
 		sprite := anim.getCurrentSprite()
 		sprite.Draw(win, transform)
-
-		fmt.Println(anim.currentFrame)
 
 		win.Update()
 

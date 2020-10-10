@@ -7,14 +7,15 @@ import (
 )
 
 type animation struct {
-	spritesheet  pixel.Picture
-	frames       []pixel.Rect
-	delays       []time.Duration
-	timeout      <-chan time.Time
-	cancel       chan interface{}
-	currentFrame int
-	active       bool
-	loop         bool
+	spritesheet   pixel.Picture
+	frames        []pixel.Rect
+	delays        []time.Duration
+	timeout       <-chan time.Time
+	cancel        chan interface{}
+	currentFrame  int
+	currentSprite *pixel.Sprite
+	active        bool
+	loop          bool
 }
 
 func (anim *animation) start() {
@@ -23,11 +24,17 @@ func (anim *animation) start() {
 	}
 
 	anim.currentFrame = 0
+	anim.setSprite(anim.currentFrame)
 	anim.timeout = time.After(anim.delays[anim.currentFrame])
 	anim.cancel = make(chan interface{})
 	anim.active = true
 
 	go anim.process()
+}
+
+func (anim *animation) setSprite(num int) {
+	anim.currentSprite.Set(anim.spritesheet,
+		anim.frames[num])
 }
 
 func (anim *animation) process() {
@@ -50,6 +57,7 @@ func (anim *animation) process() {
 				}
 			}
 
+			anim.setSprite(anim.currentFrame)
 			anim.timeout = time.After(anim.delays[anim.currentFrame])
 
 		case <-anim.cancel:
@@ -73,10 +81,6 @@ func (anim *animation) stop() {
 	}
 }
 
-func (anim *animation) getSprite(frameInd int) *pixel.Sprite {
-	return pixel.NewSprite(anim.spritesheet, anim.frames[frameInd])
-}
-
 func (anim *animation) getCurrentSprite() *pixel.Sprite {
-	return anim.getSprite(anim.currentFrame)
+	return anim.currentSprite
 }
